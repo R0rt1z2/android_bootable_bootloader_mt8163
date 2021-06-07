@@ -8,7 +8,7 @@
 #define USB_VERSIONID		(0x0100)
 #define USB_MANUFACTURER	"MediaTek"
 #define USB_PRODUCT_NAME	"Android"
-#define FASTBOOT_DEVNAME	"wisky8163_tb_m"
+#define FASTBOOT_DEVNAME	"Aquaris M8"
 #define SN_BUF_LEN		19
 
 #endif /* __CUST_USB_H__ */
