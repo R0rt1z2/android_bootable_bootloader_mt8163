@@ -13,10 +13,9 @@
 #include <string.h>
 
 /* show logo header file */
-#include <show_logo_common.h>
-#include <decompress_common.h>
-#include <show_animation_common.h>
-
+#include "../../lib/libshowlogo/show_logo_common.h"
+#include "../../lib/libshowlogo/decompress_common.h"
+#include "../../lib/libshowlogo/show_animation_common.h"
 
 LCM_SCREEN_T phical_screen;
 void  *logo_addr = NULL;
