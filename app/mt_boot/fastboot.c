@@ -358,7 +358,7 @@ static void register_secure_unlocked_var(void)
 #ifdef MTK_SECURITY_SW_SUPPORT
 	n = get_secure_status();
 #else
-	n = 0;
+	n = 1;
 #endif
 	sprintf(secure_buf,"%s",str_buf[n]);
 	fastboot_publish("secure", secure_buf);
@@ -367,7 +367,7 @@ static void register_secure_unlocked_var(void)
 #ifdef MTK_SECURITY_SW_SUPPORT
 	n = get_unlocked_status();
 #else
-	n = 1;
+	n = 0;
 #endif
 	sprintf(unlocked_buf,"%s",str_buf[n]);
 	fastboot_publish("unlocked", unlocked_buf);
@@ -376,7 +376,7 @@ static void register_secure_unlocked_var(void)
 #ifdef MTK_SECURITY_SW_SUPPORT
 	sec_query_warranty(&warranty);
 #else
-	warranty = 0;
+	warranty = 1;
 #endif
 	if (warranty >= 0 && warranty <= 1) {
 		sprintf(warranty_buf,"%s",str_buf[warranty]);
