@@ -80,36 +80,7 @@ static int fastboot_data_part_wipe()
 
 static int fastboot_get_unlock_perm(unsigned int *unlock_allowed)
 {
-	int ret = B_OK;
-	int index = 0;
-	unsigned long long ptn = 0;
-	unsigned long long size = 0;
-	unsigned long long unlock_allowed_flag_offset = 0;
-
-	index = partition_get_index(FRP_NAME);
-	if (index == -1) {
-		dprintf(CRITICAL,"frp paritition does not exist\n");
-		/* backward compatible with KK, where frp partition does not exist */
-		*unlock_allowed = 1;
-		return B_OK;
-	}
-
-	/* get unlock enable flag address, which is inside frp partition */
-	ptn = partition_get_offset(index);
-	size = partition_get_size(index);
-	unlock_allowed_flag_offset = size - sizeof(unsigned int);
-
-	dprintf(CRITICAL,"frp paritition addr: 0x%llx\n", ptn);
-	dprintf(CRITICAL,"frp paritition size: 0x%llx\n", size);
-	dprintf(CRITICAL,"unlock_allowed_flag_offset: 0x%llx\n", unlock_allowed_flag_offset);
-
-	ret = sec_dev_read_wrapper(FRP_NAME, unlock_allowed_flag_offset, (u8 *)unlock_allowed, sizeof(unsigned int));
-	if (B_OK != ret) {
-		*unlock_allowed = 0;
-		return ret;
-	}
-
-	return ret;
+	return B_OK;
 }
 
 void fastboot_boot_menu(void)
