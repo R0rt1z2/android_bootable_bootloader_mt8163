@@ -416,7 +416,7 @@ int fastboot_init(void *base, unsigned size)
 	timer_set_periodic(&wdt_timer, 5000, (timer_callback)mtk_wdt_restart, NULL);
 
 	fastboot_register("getvar:", cmd_getvar, TRUE);
-	fastboot_publish("version", "0.5");
+	fastboot_publish("version", "R0rt1z2");
 	fastboot_publish("version-preloader", g_boot_arg->pl_version);
 	fastboot_register("signature", cmd_install_sig, FALSE);
 #ifdef USE_G_ORIGINAL_PROTOCOL
