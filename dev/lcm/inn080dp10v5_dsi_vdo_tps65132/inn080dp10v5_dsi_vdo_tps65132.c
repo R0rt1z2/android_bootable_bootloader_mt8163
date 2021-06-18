@@ -1,31 +1,34 @@
+#ifndef BUILD_LK
 #include <linux/string.h>
-#include <linux/wait.h>
-#include <linux/platform_device.h>
-#include <linux/gpio.h>
-#include <linux/pinctrl/consumer.h>
-#include <linux/of_gpio.h>
-#include <asm-generic/gpio.h>
-
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/mm_types.h>
-#include <linux/module.h>
-#include <linux/types.h>
-#include <linux/slab.h>
-#include <linux/vmalloc.h>
-
-#ifdef CONFIG_OF
-#include <linux/of.h>
-#include <linux/of_irq.h>
-#include <linux/of_address.h>
-#include <linux/of_device.h>
-#include <linux/regulator/consumer.h>
-#include <linux/clk.h>
+#endif
+#include "lcm_drv.h"
+#include <cust_gpio_usage.h>
+#ifdef BUILD_LK
+#include <platform/mt_gpio.h>
+#include <string.h>
+#include <platform/mt_i2c.h>
+#elif defined(BUILD_UBOOT)
+#include <asm/arch/mt_gpio.h>
+#else
+#include <mach/mt_gpio.h>
+#include <mach/mt_pm_ldo.h>
 #endif
 
-#include "lcm_drv.h"
 
-#define LCD_DEBUG(fmt)  printk(fmt)
+#ifdef LCM_DEBUG_LOG
+#ifndef BUILD_LK
+#define lcm_print(string, args...) printf("[LCM:SHARP NT35532]"string, ##args)
+#else
+#define lcm_print(fmt, args...) printf(fmt, ##args)
+#endif
+#else
+#ifndef BUILD_LK
+#define lcm_print(fmt, args...)
+#else
+#define lcm_print(fmt, args...)
+#endif
+#endif
+
 #define TPS65132_DEVICE
 #define LCD_CONTROL_PIN
 
@@ -73,122 +76,6 @@ struct LCM_setting_table {
 #define read_reg											lcm_util.dsi_read_reg()
 #define read_reg_v2(cmd, buffer, buffer_size)					lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/list.h>
-#include <linux/i2c.h>
-#include <linux/irq.h>
-#include <linux/uaccess.h>
-#include <linux/interrupt.h>
-#include <linux/io.h>
-#include <linux/platform_device.h>
-/*****************************************************************************
- * Define
- *****************************************************************************/
-
-#ifdef TPS65132_DEVICE
-/*****************************************************************************
- * tps65132 register
- *****************************************************************************/
-
-/*****************************************************************************
- * GLobal Variable
- *****************************************************************************/
-static struct i2c_client *tps65132_i2c_client = NULL;
-
-
-/*****************************************************************************
- * Function Prototype
- *****************************************************************************/
-static int tps65132_probe(struct i2c_client *client, const struct i2c_device_id *id);
-/*****************************************************************************
- * Data Structure
- *****************************************************************************/
-
- struct tps65132_dev	{
-	struct i2c_client	*client;
-};
-
-#ifdef CONFIG_OF
-static const struct of_device_id tps65132_id[] = {
-	{ .compatible = "ti,tps65132" },
-	{},
-};
-MODULE_DEVICE_TABLE(of, tps65132_id);
-#endif
-
-static const struct i2c_device_id tps65132_i2c_id[] = { {"tps65132", 0}, {} };
-
-static struct i2c_driver tps65132_iic_driver = {
-	.driver = {
-			.name    = "tps65132",
-#ifdef CONFIG_OF
-			.of_match_table = of_match_ptr(tps65132_id),
-#endif
-	},
-	.probe       = tps65132_probe,
-	.id_table	= tps65132_i2c_id,
-};
-
-/*****************************************************************************
- * Extern Area
- *****************************************************************************/
-
-
-
-/*****************************************************************************
- * Function
- *****************************************************************************/
-static int tps65132_probe(struct i2c_client *client, const struct i2c_device_id *id)
-{
-	printk( "tps65132_iic_probe\n");
-	printk("TPS: info==>name=%s addr=0x%x\n",client->name,client->addr);
-	tps65132_i2c_client  = client;
-	return 0;
-}
-
-static int tps65132_write_bytes(unsigned char addr, unsigned char value)
-{
-	int ret = 0;
-	struct i2c_client *client = tps65132_i2c_client;
-	char write_data[2]={0};
-	write_data[0]= addr;
-	write_data[1] = value;
-	ret=i2c_master_send(client, write_data, 2);
-	if(ret<0)
-		printk("tps65132 write data fail !!\n");
-	return ret ;
-}
-
-/*
- * module load/unload record keeping
- */
-
-static int __init tps65132_iic_init(void)
-{
-	printk( "tps65132_iic_init\n");
-	i2c_add_driver(&tps65132_iic_driver);
-	printk( "tps65132_iic_init success\n");
-	return 0;
-}
-
-static void __exit tps65132_iic_exit(void)
-{
-	printk( "tps65132_iic_exit\n");
-	i2c_del_driver(&tps65132_iic_driver);
-}
-
-late_initcall(tps65132_iic_init);
-module_exit(tps65132_iic_exit);
-
-MODULE_AUTHOR("Xiaokuan Shi");
-MODULE_DESCRIPTION("MTK TPS65132 I2C Driver");
-MODULE_LICENSE("GPL");
-#endif
-
 /*****************************************************************************
  * lcm info
  *****************************************************************************/
@@ -204,17 +91,17 @@ void lcm_get_gpio_infor(void)
 
 	node = of_find_compatible_node(NULL, NULL, "mediatek,lcm");
 	if (!node) {
-		printk("Failed to find device-tree node: mediatek,lcm\n");
+		printf("Failed to find device-tree node: mediatek,lcm\n");
 		return;
 	}
 
 	GPIO_LCD_PWR_EN = of_get_named_gpio(node, "lcm_power_gpio", 0);
 	if (gpio_is_valid(GPIO_LCD_PWR_EN) < 0)
-		printk("can not get valid gpio analogix, lcm lcm_power_gpio\n");
+		printf("can not get valid gpio analogix, lcm lcm_power_gpio\n");
 
 	GPIO_LCD_RST_EN = of_get_named_gpio(node, "lcm_reset_gpio", 0);
 	if (gpio_is_valid(GPIO_LCD_RST_EN) < 0)
-		printk("can not get valid gpio analogix, lcm lcm_reset_gpio\n");
+		printf("can not get valid gpio analogix, lcm lcm_reset_gpio\n");
 }
 
 static void lcm_set_gpio_output(unsigned int GPIO, unsigned int output)
@@ -230,7 +117,7 @@ static int lcm_get_vgp_supply(struct device *dev)
 	int ret;
 	struct regulator *lcm_vgp_ldo;
 
-	printk("LCM: lcm_get_vgp_supply is going\n");
+	printf("LCM: lcm_get_vgp_supply is going\n");
 
 	lcm_vgp_ldo = devm_regulator_get(dev, "reg-lcm");
 	if (IS_ERR(lcm_vgp_ldo)) {
@@ -239,12 +126,12 @@ static int lcm_get_vgp_supply(struct device *dev)
 		return ret;
 	}
 
-	printk("LCM: lcm get supply ok.\n");
+	printf("LCM: lcm get supply ok.\n");
 
 	ret = regulator_enable(lcm_vgp_ldo);
 	/* get current voltage settings */
 	ret = regulator_get_voltage(lcm_vgp_ldo);
-	printk("lcm LDO voltage = %d in kernel stage\n", ret);
+	printf("lcm LDO voltage = %d in kernel stage\n", ret);
 
 	lcm_vgp = lcm_vgp_ldo;
 
@@ -256,29 +143,29 @@ int lcm_vgp_supply_enable(void)
 	int ret;
 	unsigned int volt;
 
-	printk("LCM: lcm_vgp_supply_enable\n");
+	printf("LCM: lcm_vgp_supply_enable\n");
 
 	if (NULL == lcm_vgp)
 		return 0;
 
-	printk("LCM: set regulator voltage lcm_vgp voltage to 1.8V\n");
+	printf("LCM: set regulator voltage lcm_vgp voltage to 1.8V\n");
 	/* set voltage to 1.8V */
 	ret = regulator_set_voltage(lcm_vgp, 1800000, 1800000);
 	if (ret != 0) {
-		pr_err("LCM: lcm failed to set lcm_vgp voltage: %d\n", ret);
+		printf("LCM: lcm failed to set lcm_vgp voltage: %d\n", ret);
 		return ret;
 	}
 
 	/* get voltage settings again */
 	volt = regulator_get_voltage(lcm_vgp);
 	if (volt == 1800000)
-		pr_err("LCM: check regulator voltage=1800000 pass!\n");
+		printf("LCM: check regulator voltage=1800000 pass!\n");
 	else
-		pr_err("LCM: check regulator voltage=1800000 fail! (voltage: %d)\n", volt);
+		printf("LCM: check regulator voltage=1800000 fail! (voltage: %d)\n", volt);
 
 	ret = regulator_enable(lcm_vgp);
 	if (ret != 0) {
-		pr_err("LCM: Failed to enable lcm_vgp: %d\n", ret);
+		printf("LCM: Failed to enable lcm_vgp: %d\n", ret);
 		return ret;
 	}
 
@@ -296,18 +183,18 @@ int lcm_vgp_supply_disable(void)
 	/* disable regulator */
 	isenable = regulator_is_enabled(lcm_vgp);
 
-	printk("LCM: lcm query regulator enable status[0x%d]\n", isenable);
+	printf("LCM: lcm query regulator enable status[0x%d]\n", isenable);
 
 	if (isenable) {
 		ret = regulator_disable(lcm_vgp);
 		if (ret != 0) {
-			pr_err("LCM: lcm failed to disable lcm_vgp: %d\n", ret);
+			printf("LCM: lcm failed to disable lcm_vgp: %d\n", ret);
 			return ret;
 		}
 		/* verify */
 		isenable = regulator_is_enabled(lcm_vgp);
 		if (!isenable)
-			pr_err("LCM: lcm regulator disable pass\n");
+			printf("LCM: lcm regulator disable pass\n");
 	}
 
 	return ret;
@@ -323,45 +210,6 @@ static int lcm_probe(struct device *dev)
 
 	return 0;
 }
-
-static const struct of_device_id lcm_of_ids[] = {
-	{.compatible = "mediatek,lcm"},
-	{}
-};
-
-static struct platform_driver lcm_driver = {
-	.driver = {
-		   .name = "mtk-lcm",
-		   .owner = THIS_MODULE,
-		   .probe = lcm_probe,
-#ifdef CONFIG_OF
-		   .of_match_table = lcm_of_ids,
-#endif
-		   },
-};
-
-static int __init lcm_init(void)
-{
-	printk("LCM: Register lcm driver\n");
-	if (platform_driver_register(&lcm_driver)) {
-		pr_err("LCM: failed to register disp driver\n");
-		return -ENODEV;
-	}
-
-	return 0;
-}
-
-static void __exit lcm_exit(void)
-{
-	platform_driver_unregister(&lcm_driver);
-	pr_notice("LCM: Unregister lcm driver done\n");
-}
-late_initcall(lcm_init);
-module_exit(lcm_exit);
-MODULE_AUTHOR("mediatek");
-MODULE_DESCRIPTION("Display subsystem Driver");
-MODULE_LICENSE("GPL");
-
 
 static struct LCM_setting_table lcm_initialization_setting[] =
 {
@@ -663,23 +511,25 @@ static void lcm_reset(unsigned char enabled)
 {
 	if(enabled)
 	{
-		lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ONE);
+		//lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ONE);
 		MDELAY(1);
-		lcm_set_gpio_output(GPIO_LCD_RST_EN, !GPIO_OUT_ONE);
+		//lcm_set_gpio_output(GPIO_LCD_RST_EN, !GPIO_OUT_ONE);
 		MDELAY(15);
-		lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ONE);
+		//lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ONE);
 	}else{
-		lcm_set_gpio_output(GPIO_LCD_RST_EN, !GPIO_OUT_ONE);
+		//lcm_set_gpio_output(GPIO_LCD_RST_EN, !GPIO_OUT_ONE);
 		MDELAY(1);
 	}
 }
 
+
 static void lcm_suspend_power(void)
 {
-	lcm_set_gpio_output(GPIO_LCD_PWR_EN, GPIO_OUT_ZERO);
+	printf("lcm_suspend_power\n");
+    //lcm_set_gpio_output(GPIO_LCD_PWR_EN, GPIO_OUT_ZERO);
 }
 
-static void lcm_resume_power(void)
+/* static void lcm_resume_power(void)
 {
 #ifdef TPS65132_DEVICE
 	unsigned char cmd = 0x0;
@@ -696,41 +546,42 @@ static void lcm_resume_power(void)
 
 	ret=tps65132_write_bytes(cmd,data);
 	if(ret<0)
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
 	else
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
 
 	cmd=0x01;
 	data=0x12;//DAC 5.8V
 
 	ret=tps65132_write_bytes(cmd,data);
 	if(ret<0)
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
 	else
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
 
 	cmd=0x03;
-	data=0x43;/*Set APPLICATION in Tablet mode (default is 0x03 ,smartphone mode)*/
+	data=0x43;/*Set APPLICATION in Tablet mode (default is 0x03 ,smartphone mode)
 
 	ret=tps65132_write_bytes(cmd,data);
 	if(ret<0)
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write error-----\n",cmd);
 	else
-		printk("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
+		printf("[KERNEL]inn080dp10v5----tps65132---cmd=%0x-- i2c write success-----\n",cmd);
 #endif
+} */
+
 #endif
-}
 
 static void init_lcm_registers(void)
 {
-	printk(" %s, kernel\n", __func__);
+	printf(" %s, kernel\n", __func__);
 
 	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
 }
 
 static void lcm_init_lcm(void)
 {
-	printk("[Kernel/LCM] lcm_init() enter\n");
+	printf("[Kernel/LCM] lcm_init() enter\n");
 }
 
 
@@ -738,29 +589,29 @@ static void lcm_suspend(void)
 {
 	unsigned int data_array[16];
 
-	printk("[Kernel/LCM] lcm_suspend() enter\n");
+	printf("[Kernel/LCM] lcm_suspend() enter\n");
 
 	data_array[0] = 0x00280500;  //display off
 	dsi_set_cmdq(data_array, 1, 1);
 	MDELAY(10);
 	lcm_reset(0);
 	lcm_suspend_power();
-	lcm_vgp_supply_disable();
+	//lcm_vgp_supply_disable();
 	MDELAY(1);
 }
 
 
 static void lcm_resume(void)
 {
-	printk("[Kernel/LCM] lcm_resume() enter\n");
+	printf("[Kernel/LCM] lcm_resume() enter\n");
 
-	lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ZERO);
+	// lcm_set_gpio_output(GPIO_LCD_RST_EN, GPIO_OUT_ZERO);
 
-	lcm_vgp_supply_enable();
+	//lcm_vgp_supply_enable();
 	MDELAY(5);
 
 	//power on avdd and avee
-	lcm_resume_power();
+	// lcm_resume_power();
 
 	MDELAY(50);
 	lcm_reset(1);

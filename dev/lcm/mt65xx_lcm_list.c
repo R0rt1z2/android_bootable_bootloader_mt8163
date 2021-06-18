@@ -261,6 +261,7 @@ extern LCM_DRIVER jd9365_dsi_hd_drv;
 extern LCM_DRIVER rm68200_dsi_lcm_drv;
 extern LCM_DRIVER jd_9365_cpt;
 extern LCM_DRIVER nt51021;
+extern LCM_DRIVER inn080dp10v5_dsi_vdo_tps65132_lcm_drv;
 #endif
 
 LCM_DRIVER *lcm_driver_list[] = {
@@ -1213,6 +1214,10 @@ LCM_DRIVER *lcm_driver_list[] = {
     &s6e3ha3_wqhd_2k_cmd_lcm_drv,
 #endif
 
+#if defined(INN080DP10V5_DSI_VDO_TPS65132)
+	&inn080dp10v5_dsi_vdo_tps65132_lcm_drv,
+#endif
+
 #endif
 };
 
@@ -1240,6 +1245,9 @@ unsigned char lcm_name_list[][128] = {
 
 #if defined(R63419_WQHD_TRULY_PHANTOM_2K_CMD_OK_MT6797)
 	"r63419_wqhd_truly_phantom_2k_cmd_ok",
+#endif
+#if defined(INN080DP10V5_DSI_VDO_TPS65132)
+	"inn080dp10v5_dsi_vdo_tps65132_lcm_drv",
 #endif
 };
 #endif
