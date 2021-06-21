@@ -383,6 +383,7 @@ void bio_initialize_bdev(bdev_t *dev, const char *name, size_t block_size, bnum_
 
 	list_clear_node(&dev->node);
 	dev->name = strdup(name);
+    dev->serial = NULL;
 	dev->block_size = block_size;
 	dev->block_count = block_count;
 	dev->size = (off_t)block_count * block_size;

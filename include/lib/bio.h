@@ -37,9 +37,10 @@ typedef struct bdev {
 	off_t size;
 	size_t block_size;
 	bnum_t block_count;
-    char *label;
+	char *label;
 	bool is_gpt;
 	bool is_subdev;
+    char *serial;
 
 	/* function pointers */
 	ssize_t (*read)(struct bdev *, void *buf, off_t offset, size_t len);
