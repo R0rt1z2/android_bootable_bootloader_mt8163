@@ -266,7 +266,9 @@ again:
 			goto again;
 		}
 		dprintf(ALWAYS,"[unknown command]*[%s]*\n", buffer);
-		fastboot_fail("unknown command");
+		fastboot_info("unknown command");
+		fastboot_info("See 'fastboot oem help'");
+		fastboot_fail("");
 
 	}
 	fastboot_state = STATE_OFFLINE;
