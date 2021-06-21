@@ -80,6 +80,7 @@ static int fastboot_data_part_wipe()
 
 static int fastboot_get_unlock_perm(unsigned int *unlock_allowed)
 {
+    *unlock_allowed = 1; // force OEM unlock - ignore FRP
 	return B_OK;
 }
 
