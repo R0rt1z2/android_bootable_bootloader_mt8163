@@ -11,6 +11,7 @@ void cmd_continue(const char *arg, void *data, unsigned sz);
 void cmd_oem_p2u(const char *arg, void *data, unsigned sz);
 void cmd_oem_reboot2recovery(const char *arg, void *data, unsigned sz);
 void cmd_oem_append_cmdline(const char *arg, void *data, unsigned sz);
+void cmd_oem_show_cmdline(const char *arg, void *data, unsigned sz);
 #ifdef MTK_JTAG_SWITCH_SUPPORT
 void cmd_oem_ap_jtag(const char *arg, void *data, unsigned sz);
 #endif

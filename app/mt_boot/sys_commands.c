@@ -83,6 +83,13 @@ void cmd_oem_append_cmdline(const char *arg, void *data, unsigned sz)
 	return;
 }
 
+void cmd_oem_show_cmdline(const char *arg, void *data, unsigned sz)
+{
+    fastboot_info(cmdline_get());
+    fastboot_okay("");
+    return;
+}
+
 #ifdef MTK_TC7_COMMON_DEVICE_INTERFACE
 void cmd_oem_ADB_Auto_Enable(const char *arg, void *data, unsigned sz)
 {

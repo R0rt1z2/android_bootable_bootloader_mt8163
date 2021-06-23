@@ -478,6 +478,9 @@ int fastboot_init(void *base, unsigned size)
 #ifdef MTK_USB2JTAG_SUPPORT
 	fastboot_register("oem usb2jtag", cmd_oem_usb2jtag, FALSE);
 #endif
+
+    fastboot_register("oem show-cmdline", cmd_oem_show_cmdline, FALSE);
+
 	event_init(&usb_online, 0, EVENT_FLAG_AUTOUNSIGNAL);
 	event_init(&txn_done, 0, EVENT_FLAG_AUTOUNSIGNAL);
 
