@@ -1,3 +1,7 @@
+#ifndef kal_uint32
+typedef unsigned int            kal_uint32;
+#endif
+
 extern void upmu_set_rg_vcdt_hv_en(kal_uint32 val);
 extern kal_uint32 upmu_get_rgs_chr_ldo_det(void);
 extern void upmu_set_rg_pchr_automode(kal_uint32 val);
