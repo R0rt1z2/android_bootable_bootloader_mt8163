@@ -244,14 +244,8 @@ again:
 
 			dprintf(ALWAYS,"[Cmd process]-[buf:%s]-[lenBuf:%s]\n", buffer,  buffer + cmd->prefix_len);
 
-#ifdef MTK_SECURITY_SW_SUPPORT
-			if ( !(sec_usbdl_enabled() || seclib_sec_boot_enabled(1)) || cmd->sec_support )
-#endif
-			{
-				cmd->handle((const char*) buffer + cmd->prefix_len,
-				            (void*) download_base, download_size);
-			}
-
+			cmd->handle((const char*) buffer + cmd->prefix_len,
+				      (void*) download_base, download_size);
 
 			if (fastboot_state == STATE_COMMAND) {
 #ifdef MTK_SECURITY_SW_SUPPORT
