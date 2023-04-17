@@ -79,6 +79,7 @@ void cmd_oem_append_cmdline(const char *arg, void *data, unsigned sz)
 		return;
 	}
 	dprintf(INFO, "[FASTBOOT] New command line:%s\n", (char *)cmdline_get());
+        fastboot_info("Please use 'fastboot continue' to use the new cmdline!");
 	fastboot_okay("");
 	return;
 }
