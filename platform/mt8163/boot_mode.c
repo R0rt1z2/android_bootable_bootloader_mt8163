@@ -97,6 +97,18 @@ void boot_mode_select(void)
     }
     mrdump_check();
 
+    // Lets us boot to recovery or fastboot mode by
+    // just sending the handshake cmd to the device.
+    if (g_boot_mode == 4) {
+        // Use factory mode to reboot to fastboot.
+        g_boot_mode = FASTBOOT;
+        return;
+    } else if (g_boot_mode == 6) {
+        // Use advanced factory mode to reboot to recovery.
+        g_boot_mode = RECOVERY;
+        return;
+    }
+
 #if defined (HAVE_LK_TEXT_MENU)
 /*Check RTC to know if system want to reboot to Fastboot*/
     if(Check_RTC_PDN1_bit13())
